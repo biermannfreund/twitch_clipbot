@@ -1,10 +1,13 @@
 import os
-from flask import Flask
+from flask import Flask, request
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
+    code = request.args.get('code')
+    if code:
+        return f'✅ Auth-Code erhalten: {code}'
     return '✅ Clipbot ist online!'
 
 @app.route('/create_clip')
