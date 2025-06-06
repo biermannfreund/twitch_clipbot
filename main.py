@@ -12,7 +12,7 @@ app = Flask(__name__)
 ACCESS_TOKEN = get_valid_token()
 CLIENT_ID = "xlua26e5vwxr73ey0k81b8br2i6of1"
 BROADCASTER_ID = "1219147036"  # schildis_azubi
-DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")  # muss in Render gesetzt werden
+DISCORD_WEBHOOK_URL = os.getenv("https://discord.com/api/webhooks/1380373468222193674/fYxgiuvMn3xlsaVTXwDk-UlC2ACMqSvNklz6CYnrTfUiT_fCQwPxXp8W29ESzTco1MSRL")  # muss in Render gesetzt werden
 
 @app.route('/')
 def home():
