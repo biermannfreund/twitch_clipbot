@@ -3,6 +3,8 @@ import requests
 from flask import Flask
 from twitch_token_refresh import get_valid_token
 from datetime import datetime
+from dateutil import parser
+import pytz
 
 app = Flask(__name__)
 
@@ -34,9 +36,11 @@ def create_clip():
         clip_id = data["data"][0]["id"]
         clip_url = f"https://clips.twitch.tv/{clip_id}"
 
-        # Zeitformat Clip
-        now = datetime.now().strftime("%d.%m.%Y – %H:%M:%S")
-        message = f"📎 Clip vom {now}: {clip_url}"
+        # Echten Clip-Erstellzeitpunkt auslesen und formatieren
+        utc_time = parser.isoparse(data["data"][0]["created_at"])
+        local_time = utc_time.astimezone(pytz.timezone("Europe/Berlin"))
+        timestamp = local_time.strftime("%d.%m.%Y – %H:%M:%S")
+        message = f"📎 Clip vom {timestamp}: {clip_url}"
 
         # an Discord senden, falls Webhook definiert
         if DISCORD_WEBHOOK_URL:
