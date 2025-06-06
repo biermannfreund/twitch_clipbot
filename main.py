@@ -32,10 +32,8 @@ def create_clip():
         clip_id = data["data"][0]["id"]
         clip_url = f"https://clips.twitch.tv/{clip_id}"
         return f"🎬 Clip erstellt: {clip_url}"
-    elif response.status_code == 404 and "offline" in data.get("message", "").lower():
-        return "❌ Clip fehlgeschlagen: Dein Kanal ist aktuell nicht live."
     else:
-        return "⚠️ Leider konnte kein Clip erstellt werden. Bitte versuche es später nochmal."
+        return ""
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
