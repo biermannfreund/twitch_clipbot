@@ -7,7 +7,7 @@ app = Flask(__name__)
 # Deine festen Twitch-Daten
 ACCESS_TOKEN = "h75r8winxevcnthjc4blxjlyngfppg"
 CLIENT_ID = "xlua26e5vwxr73ey0k81b8br2i6of1"
-BROADCASTER_ID = "DEINE_USER_ID_HIER"  # gleich unten erklärt
+BROADCASTER_ID = "1219147036"  # gleich unten erklärt
 
 @app.route('/')
 def home():
