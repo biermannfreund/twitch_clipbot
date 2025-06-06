@@ -2,6 +2,7 @@ import os
 import requests
 from flask import Flask
 from twitch_token_refresh import get_valid_token
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -9,6 +10,7 @@ app = Flask(__name__)
 ACCESS_TOKEN = get_valid_token()
 CLIENT_ID = "xlua26e5vwxr73ey0k81b8br2i6of1"
 BROADCASTER_ID = "1219147036"  # schildis_azubi
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")  # muss in Render gesetzt werden
 
 @app.route('/')
 def home():
@@ -31,7 +33,19 @@ def create_clip():
     if response.status_code == 201 and "data" in data and data["data"]:
         clip_id = data["data"][0]["id"]
         clip_url = f"https://clips.twitch.tv/{clip_id}"
-        return f"🎬 Clip erstellt: {clip_url}"
+
+        # Zeitformat Clip
+        now = datetime.now().strftime("%d.%m.%Y – %H:%M:%S")
+        message = f"📎 Clip vom {now}: {clip_url}"
+
+        # an Discord senden, falls Webhook definiert
+        if DISCORD_WEBHOOK_URL:
+            try:
+                requests.post(DISCORD_WEBHOOK_URL, json={"content": message})
+            except:
+                pass
+
+        return message
     else:
         return ""
 
