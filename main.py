@@ -5,7 +5,8 @@ from flask import Flask
 app = Flask(__name__)
 
 # Deine festen Twitch-Daten
-ACCESS_TOKEN = "h75r8winxevcnthjc4blxjlyngfppg"
+from twitch_token_refresh import get_valid_token
+ACCESS_TOKEN = get_valid_token()
 CLIENT_ID = "xlua26e5vwxr73ey0k81b8br2i6of1"
 BROADCASTER_ID = "1219147036"  # gleich unten erklärt
 
