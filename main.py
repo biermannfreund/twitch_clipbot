@@ -20,10 +20,9 @@ def test_webhook():
         try:
             timestamp = "09.06.2025 – 21:57:09"
             clip_url = "https://clips.twitch.tv/FakeTestClipURL"
-            message = f"📎 Clip vom {timestamp}: {clip_url}"
-            r = requests.post(webhook_url, json={"content": message})
-            print(f"✅ Discord-Testantwort: {r.status_code} – {r.text}")
-            return "✅ Testnachricht gesendet."
+            message = f"📎 Clip vom {timestamp}: [Klicke hier, um zum Clip zu gelangen]({clip_url})"
+            r = send_discord_message(webhook_url, message)
+            return f"✅ Discord-Testantwort: {r.status_code} – {r.text}"
         except Exception as e:
             return f"❌ Fehler beim Senden: {e}"
     else:
@@ -52,10 +51,8 @@ def create_clip():
         clip_id = data["data"][0]["id"]
         clip_url = f"https://clips.twitch.tv/{clip_id}"
 
-        # Warte kurz, bis Clip fertig ist
         time.sleep(6)
 
-        # Clip-Infos erneut abrufen, um Erstellungszeit zu bekommen
         clip_info_response = requests.get(
             "https://api.twitch.tv/helix/clips",
             headers=headers,
@@ -76,13 +73,12 @@ def create_clip():
             print(f"❌ Fehler beim Timestamp-Parsen: {e}")
             timestamp = "Unbekannt"
 
-        message = f"📎 Clip vom {timestamp}: {clip_url}"
+        message = f"📎 Clip vom {timestamp}: [Klicke hier, um zum Clip zu gelangen]({clip_url})"
         print(f"📤 Sende Nachricht an Discord: {message}")
 
         if webhook_url:
             try:
-                r = requests.post(webhook_url, json={"content": message})
-                print(f"✅ Discord-Antwort: {r.status_code} – {r.text}")
+                r = send_discord_message(webhook_url, message)
                 if r.status_code >= 200 and r.status_code < 300:
                     return message
                 else:
@@ -93,6 +89,17 @@ def create_clip():
             return "⚠️ Kein DISCORD_WEBHOOK_URL definiert."
     else:
         return f"❌ Fehler bei Clip-Erstellung: {response.status_code} – {data}"
+
+def send_discord_message(webhook_url, message, retries=3, delay=5):
+    for attempt in range(retries):
+        response = requests.post(webhook_url, json={"content": message})
+        print(f"🔁 Versuch {attempt + 1}: Status {response.status_code}")
+        if response.status_code == 429:
+            print("⚠️ Rate Limit erreicht. Warte...")
+            time.sleep(delay * (attempt + 1))
+        else:
+            return response
+    return response
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
