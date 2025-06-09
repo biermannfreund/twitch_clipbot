@@ -8,12 +8,12 @@ services:
     startCommand: "python main.py"
     envVars:
       - key: TWITCH_CLIENT_ID
-        value: dein_client_id
+        sync: true
       - key: TWITCH_CLIENT_SECRET
-        value: dein_client_secret
+        sync: true
       - key: TWITCH_REFRESH_TOKEN
-        value: dein_refresh_token
+        sync: true
       - key: TWITCH_BROADCASTER_ID
-        value: deine_broadcaster_id
+        sync: true
       - key: DISCORD_WEBHOOK_URL
-        value: dein_discord_webhook
+        sync: true
