@@ -18,7 +18,9 @@ def test_webhook():
     webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
     if webhook_url:
         try:
-            message = "✅ Testnachricht vom Clipbot (Discord-Webhook funktioniert)."
+            timestamp = "09.06.2025 – 21:57:09"
+            clip_url = "https://clips.twitch.tv/FakeTestClipURL"
+            message = f"📎 Clip vom {timestamp}: [Klicke hier, um zum Clip zu gelangen]({clip_url})"
             r = requests.post(webhook_url, json={"content": message})
             print(f"✅ Discord-Testantwort: {r.status_code} – {r.text}")
             return "✅ Testnachricht gesendet."
@@ -74,7 +76,7 @@ def create_clip():
             print(f"❌ Fehler beim Timestamp-Parsen: {e}")
             timestamp = "Unbekannt"
 
-        message = f"📎 Clip vom {timestamp}: {clip_url}"
+        message = f"📎 Clip vom {timestamp}: [Klicke hier, um zum Clip zu gelangen]({clip_url})"
         print(f"📤 Sende Nachricht an Discord: {message}")
 
         if webhook_url:
