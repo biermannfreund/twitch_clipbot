@@ -74,7 +74,7 @@ def create_clip():
             print(f"❌ Fehler beim Timestamp-Parsen: {e}")
             timestamp = "Unbekannt"
 
-        message = f"📎 Clip vom {timestamp}: {clip_url}"
+        message = f"📎 Clip vom {timestamp}: [Klicke hier, um zum Clip zu gelangen]({clip_url})"
         print(f"📤 Sende Nachricht an Discord: {message}")
 
         if DISCORD_WEBHOOK_URL:
