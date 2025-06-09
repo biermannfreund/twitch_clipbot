@@ -50,10 +50,10 @@ def create_clip():
         clip_id = data["data"][0]["id"]
         clip_url = f"https://clips.twitch.tv/{clip_id}"
 
-        # Warten, bis Clip-Daten bereitstehen
+        # Warte kurz, bis Clip fertig ist
         time.sleep(6)
 
-        # Erstellungszeit separat von Twitch abrufen
+        # Clip-Infos erneut abrufen, um Erstellungszeit zu bekommen
         clip_info_response = requests.get(
             "https://api.twitch.tv/helix/clips",
             headers=headers,
@@ -74,7 +74,7 @@ def create_clip():
             print(f"❌ Fehler beim Timestamp-Parsen: {e}")
             timestamp = "Unbekannt"
 
-        message = f"📎 Clip vom {timestamp}: [Klicke hier, um zum Clip zu gelangen]({clip_url})"
+        message = f"📎 Clip vom {timestamp}: {clip_url}"
         print(f"📤 Sende Nachricht an Discord: {message}")
 
         if webhook_url:
