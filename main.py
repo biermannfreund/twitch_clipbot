@@ -10,7 +10,6 @@ import time
 app = Flask(__name__)
 
 # Twitch-Daten
-ACCESS_TOKEN = get_valid_token()
 CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 BROADCASTER_ID = os.getenv("TWITCH_BROADCASTER_ID")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
@@ -34,6 +33,7 @@ def test_webhook():
 
 @app.route('/create_clip')
 def create_clip():
+    ACCESS_TOKEN = get_valid_token()
     headers = {
         'Authorization': f'Bearer {ACCESS_TOKEN}',
         'Client-Id': CLIENT_ID
@@ -83,6 +83,8 @@ def create_clip():
                 print(f"✅ Discord-Antwort: {r.status_code} – {r.text}")
             except Exception as e:
                 print(f"❌ Fehler beim Discord-Post: {e}")
+        else:
+            print("⚠️ Kein DISCORD_WEBHOOK_URL definiert.")
 
         return message
     else:
