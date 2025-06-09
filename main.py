@@ -9,21 +9,17 @@ import time
 
 app = Flask(__name__)
 
-# Twitch-Daten
-CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
-BROADCASTER_ID = os.getenv("TWITCH_BROADCASTER_ID")
-DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
-
 @app.route('/')
 def home():
     return '✅ Clipbot läuft!'
 
 @app.route('/test_webhook')
 def test_webhook():
-    if DISCORD_WEBHOOK_URL:
+    webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
+    if webhook_url:
         try:
             message = "✅ Testnachricht vom Clipbot (Discord-Webhook funktioniert)."
-            r = requests.post(DISCORD_WEBHOOK_URL, json={"content": message})
+            r = requests.post(webhook_url, json={"content": message})
             print(f"✅ Discord-Testantwort: {r.status_code} – {r.text}")
             return "✅ Testnachricht gesendet."
         except Exception as e:
@@ -33,13 +29,17 @@ def test_webhook():
 
 @app.route('/create_clip')
 def create_clip():
-    ACCESS_TOKEN = get_valid_token()
+    access_token = get_valid_token()
+    client_id = os.getenv("TWITCH_CLIENT_ID")
+    broadcaster_id = os.getenv("TWITCH_BROADCASTER_ID")
+    webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
+
     headers = {
-        'Authorization': f'Bearer {ACCESS_TOKEN}',
-        'Client-Id': CLIENT_ID
+        'Authorization': f'Bearer {access_token}',
+        'Client-Id': client_id
     }
     params = {
-        'broadcaster_id': BROADCASTER_ID,
+        'broadcaster_id': broadcaster_id,
         'has_delay': False
     }
 
@@ -77,9 +77,9 @@ def create_clip():
         message = f"📎 Clip vom {timestamp}: [Klicke hier, um zum Clip zu gelangen]({clip_url})"
         print(f"📤 Sende Nachricht an Discord: {message}")
 
-        if DISCORD_WEBHOOK_URL:
+        if webhook_url:
             try:
-                r = requests.post(DISCORD_WEBHOOK_URL, json={"content": message})
+                r = requests.post(webhook_url, json={"content": message})
                 print(f"✅ Discord-Antwort: {r.status_code} – {r.text}")
             except Exception as e:
                 print(f"❌ Fehler beim Discord-Post: {e}")
