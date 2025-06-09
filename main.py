@@ -81,12 +81,14 @@ def create_clip():
             try:
                 r = requests.post(webhook_url, json={"content": message})
                 print(f"✅ Discord-Antwort: {r.status_code} – {r.text}")
+                if r.status_code >= 200 and r.status_code < 300:
+                    return message
+                else:
+                    return f"❌ Fehler beim Discord-Post: {r.status_code} – {r.text}"
             except Exception as e:
-                print(f"❌ Fehler beim Discord-Post: {e}")
+                return f"❌ Fehler beim Discord-Post: {e}"
         else:
-            print("⚠️ Kein DISCORD_WEBHOOK_URL definiert.")
-
-        return message
+            return "⚠️ Kein DISCORD_WEBHOOK_URL definiert."
     else:
         return f"❌ Fehler bei Clip-Erstellung: {response.status_code} – {data}"
 
