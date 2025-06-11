@@ -5,9 +5,8 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Verwende Umgebungsvariable für Discord Relay URL (anstatt direkten Webhook)
-DISCORD_RELAY_URL = os.getenv("DISCORD_RELAY_URL") 
-
+# Webhook wird nicht direkt gesetzt, sondern über den Relay-Service
+DISCORD_RELAY_URL = os.getenv("DISCORD_RELAY_URL")
 
 def send_discord_message(message):
     if not DISCORD_RELAY_URL:
