@@ -1,49 +1,35 @@
 from flask import Flask, request, jsonify
 import requests
 import os
-from datetime import datetime
 
 app = Flask(__name__)
 
-# Webhook wird nicht direkt gesetzt, sondern über den Relay-Service
-DISCORD_RELAY_URL = os.getenv("DISCORD_RELAY_URL")
+# Cloudflare Worker Relay URL
+CLOUDFLARE_RELAY_URL = "https://discord-relay.biermannfreund.workers.dev"
 
-def send_discord_message(message):
-    if not DISCORD_RELAY_URL:
-        print("❌ Kein DISCORD_RELAY_URL gesetzt!")
-        return None
+@app.route("/create_clip", methods=["GET"])
+def create_clip():
+    # 1. Twitch Clip generieren (hier nur Dummy-URL als Platzhalter)
+    clip_url = "https://clips.twitch.tv/FancyTestClip123"
+
+    # 2. Sende an Cloudflare Relay
     try:
-        data = {"message": message}
-        response = requests.post(DISCORD_RELAY_URL, json=data)
-        print(f"✅ Discord-Antwort: {response.status_code} – {response.text[:100]}")
-        return response
+        resp = requests.post(
+            CLOUDFLARE_RELAY_URL,
+            json={"message": f"🎬 Neuer Clip: {clip_url}"}
+        )
+        if resp.status_code != 200:
+            return jsonify({"error": "Cloudflare Relay fehlgeschlagen", "details": resp.text}), 500
+
+        return jsonify({
+            "status": "✅ Clip wurde erstellt und im Discord gepostet!",
+            "clip": clip_url
+        })
+
     except Exception as e:
-        print(f"❌ Fehler beim Senden der Nachricht: {e}")
-        return None
+        return jsonify({"error": "Fehler beim Clip erstellen", "details": str(e)}), 500
 
+@app.route("/", methods=["GET"])
+def root():
+    return "✅ Twitch Clipbot läuft!"
 
-@app.route('/test_webhook')
-def test_webhook():
-    clip_url = request.args.get("clip", "https://example.com/dein-clip")
-    silent = request.args.get("silent", "0") == "1"
-
-    timestamp = datetime.now().strftime("%d.%m.%Y um %H:%M:%S")
-    message = f"📎 Clip vom {timestamp}: [Klicke hier, um zum Clip zu gelangen]({clip_url})"
-
-    if not silent:
-        send_discord_message(message)
-    else:
-        print("🟡 Discord-Ausgabe übersprungen (silent mode aktiviert).")
-        print(f"Vorschau: {message}")
-
-    # Ausgabe für Twitch Chat (gekürzt)
-    return "✅ Clip der letzten Minute wurde erstellt und im Discord gepostet! 🎬"
-
-
-@app.route("/")
-def index():
-    return "Twitch Clipbot Service läuft. Benutze /test_webhook für Tests."
-
-
-if __name__ == '__main__':
-    app.run(debug=False, host="0.0.0.0", port=5000)
