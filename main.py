@@ -57,16 +57,13 @@ def create_clip():
 
         # Fehler im Discord Relay?
         if discord_resp.status_code != 200:
-            return jsonify({"error": "Discord Relay Fehler", "details": discord_resp.text}), 500
+            return "⚠️ Clip wurde erstellt, aber der Discord-Post ist fehlgeschlagen."
 
         # Rückmeldung an Twitch Chat (SE)
-        return jsonify({
-            "status": "✅ Clip der letzten Minute wurde erstellt und im Discord gepostet! 🎬",
-            "clip": clip_url
-        })
+        return f"📎 Clip erstellt: {clip_url} 🎬"
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return f"❌ Fehler: {str(e)}"
 
 @app.route("/", methods=["GET"])
 def root():
