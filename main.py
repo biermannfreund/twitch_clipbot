@@ -1,33 +1,72 @@
 from flask import Flask, request, jsonify
 import requests
 import os
+import json
 
 app = Flask(__name__)
 
-# Cloudflare Worker Relay URL
-CLOUDFLARE_RELAY_URL = "https://discord-relay.biermannfreund.workers.dev"
+# === ENV ===
+CLOUDFLARE_RELAY_URL = os.environ.get("DISCORD_RELAY_URL")
+BROADCASTER_ID = os.environ.get("TWITCH_BROADCASTER_ID")
+CLIENT_ID = os.environ.get("TWITCH_CLIENT_ID")
+CLIENT_SECRET = os.environ.get("TWITCH_CLIENT_SECRET")
+REFRESH_TOKEN = os.environ.get("TWITCH_REFRESH_TOKEN")
+TOKEN_FILE = os.environ.get("TWITCH_TOKEN_FILE", "token.json")
 
+# === Token holen oder erneuern ===
+def get_access_token():
+    if os.path.exists(TOKEN_FILE):
+        with open(TOKEN_FILE, "r") as f:
+            token_data = json.load(f)
+            return token_data.get("access_token")
+
+    url = "https://id.twitch.tv/oauth2/token"
+    data = {
+        "grant_type": "refresh_token",
+        "refresh_token": REFRESH_TOKEN,
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET
+    }
+    r = requests.post(url, data=data)
+    r.raise_for_status()
+    token_data = r.json()
+    with open(TOKEN_FILE, "w") as f:
+        json.dump(token_data, f)
+    return token_data["access_token"]
+
+# === Clip erstellen ===
 @app.route("/create_clip", methods=["GET"])
 def create_clip():
-    # 1. Twitch Clip generieren (hier nur Dummy-URL als Platzhalter)
-    clip_url = "https://clips.twitch.tv/FancyTestClip123"
-
-    # 2. Sende an Cloudflare Relay
     try:
-        resp = requests.post(
-            CLOUDFLARE_RELAY_URL,
-            json={"message": f"🎬 Neuer Clip: {clip_url}"}
-        )
-        if resp.status_code != 200:
-            return jsonify({"error": "Cloudflare Relay fehlgeschlagen", "details": resp.text}), 500
+        token = get_access_token()
+        headers = {
+            "Client-ID": CLIENT_ID,
+            "Authorization": f"Bearer {token}"
+        }
+        params = {"broadcaster_id": BROADCASTER_ID, "has_delay": False}
+        r = requests.post("https://api.twitch.tv/helix/clips", headers=headers, params=params)
+        r.raise_for_status()
+        clip_data = r.json()
+        clip_url = f"https://clips.twitch.tv/{clip_data['data'][0]['id']}"
 
+        # Discord via Relay posten
+        discord_resp = requests.post(
+            CLOUDFLARE_RELAY_URL,
+            json={"message": f"📎 Clip vom Twitch-Stream: {clip_url}"}
+        )
+
+        # Fehler im Discord Relay?
+        if discord_resp.status_code != 200:
+            return jsonify({"error": "Discord Relay Fehler", "details": discord_resp.text}), 500
+
+        # Rückmeldung an Twitch Chat (SE)
         return jsonify({
-            "status": "✅ Clip wurde erstellt und im Discord gepostet!",
+            "status": "✅ Clip der letzten Minute wurde erstellt und im Discord gepostet! 🎬",
             "clip": clip_url
         })
 
     except Exception as e:
-        return jsonify({"error": "Fehler beim Clip erstellen", "details": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/", methods=["GET"])
 def root():
