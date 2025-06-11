@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import requests
 import os
 import json
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -47,12 +48,16 @@ def create_clip():
         r = requests.post("https://api.twitch.tv/helix/clips", headers=headers, params=params)
         r.raise_for_status()
         clip_data = r.json()
-        clip_url = f"https://clips.twitch.tv/{clip_data['data'][0]['id']}"
+        clip_id = clip_data['data'][0]['id']
+        clip_url = f"https://clips.twitch.tv/{clip_id}"
+
+        # Zeitstempel generieren
+        now = datetime.now().strftime("%d.%m.%Y – %H:%M:%S")
 
         # Discord via Relay posten
         discord_resp = requests.post(
             CLOUDFLARE_RELAY_URL,
-            json={"message": f"📎 Clip vom Twitch-Stream: {clip_url}"}
+            json={"message": f"📎 Clip vom {now}: {clip_url} 🎬"}
         )
 
         # Fehler im Discord Relay?
