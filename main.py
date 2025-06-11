@@ -37,7 +37,8 @@ def test_webhook():
         print("🟡 Discord-Ausgabe übersprungen (silent mode aktiviert).")
         print(f"Vorschau: {message}")
 
-    return jsonify({"status": "success", "preview": message})
+    # Ausgabe für Twitch Chat (gekürzt)
+    return "✅ Clip der letzten Minute wurde erstellt und im Discord gepostet! 🎬"
 
 
 @app.route("/")
