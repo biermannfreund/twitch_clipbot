@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 import requests
 import os
-import json
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 
 app = Flask(__name__)
 
@@ -12,14 +12,18 @@ BROADCASTER_ID = os.environ.get("TWITCH_BROADCASTER_ID")
 CLIENT_ID = os.environ.get("TWITCH_CLIENT_ID")
 CLIENT_SECRET = os.environ.get("TWITCH_CLIENT_SECRET")
 REFRESH_TOKEN = os.environ.get("TWITCH_REFRESH_TOKEN")
-TOKEN_FILE = os.environ.get("TWITCH_TOKEN_FILE", "token.json")
 
-# === Token holen oder erneuern ===
+# === Token Cache ===
+cached_token = None
+token_timestamp = 0
+TOKEN_VALIDITY_SECONDS = 3 * 60 * 60  # 3 Stunden
+
+# === Token holen (nur wenn älter als 3h) ===
 def get_access_token():
-    if os.path.exists(TOKEN_FILE):
-        with open(TOKEN_FILE, "r") as f:
-            token_data = json.load(f)
-            return token_data.get("access_token")
+    global cached_token, token_timestamp
+    now = time.time()
+    if cached_token and (now - token_timestamp) < TOKEN_VALIDITY_SECONDS:
+        return cached_token
 
     url = "https://id.twitch.tv/oauth2/token"
     data = {
@@ -31,9 +35,9 @@ def get_access_token():
     r = requests.post(url, data=data)
     r.raise_for_status()
     token_data = r.json()
-    with open(TOKEN_FILE, "w") as f:
-        json.dump(token_data, f)
-    return token_data["access_token"]
+    cached_token = token_data["access_token"]
+    token_timestamp = now
+    return cached_token
 
 # === Clip erstellen ===
 @app.route("/create_clip", methods=["GET"])
