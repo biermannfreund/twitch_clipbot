@@ -69,7 +69,7 @@ def create_clip():
             return "⚠️ Clip wurde erstellt, aber der Discord-Post ist fehlgeschlagen."
 
         # Rückmeldung an Twitch Chat (SE)
-        return f"📎 Clip der letzten Minute erstellt und im Discord gepostet: {clip_url} 🎬"
+        return f"📎 Clip der letzten 30 Sekunden erstellt und im Discord gepostet: {clip_url} 🎬"
 
     except Exception as e:
         return f"❌ Fehler: {str(e)}"
