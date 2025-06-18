@@ -3,6 +3,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 import time
+from pytz import timezone
 
 app = Flask(__name__)
 
@@ -55,8 +56,11 @@ def create_clip():
         clip_id = clip_data['data'][0]['id']
         clip_url = f"https://clips.twitch.tv/{clip_id}"
 
-        # Zeitstempel generieren
-        now = datetime.now().strftime("%d.%m.%Y – %H:%M:%S")
+        time.sleep(7)  # Clip bereit werden lassen
+
+        # Zeitstempel generieren mit deutscher Sommerzeit
+        berlin = timezone("Europe/Berlin")
+        now = datetime.now(berlin).strftime("%d.%m.%Y – %H:%M:%S")
 
         # Discord via Relay posten
         discord_resp = requests.post(
@@ -69,7 +73,7 @@ def create_clip():
             return "⚠️ Clip wurde erstellt, aber der Discord-Post ist fehlgeschlagen."
 
         # Rückmeldung an Twitch Chat (SE)
-        return f"📎 Clip der letzten 30 Sekunden erstellt und im Discord gepostet: {clip_url} 🎬"
+        return f"📎 Clip der letzten Minute erstellt und im Discord gepostet: {clip_url} 🎬"
 
     except Exception as e:
         return f"❌ Fehler: {str(e)}"
